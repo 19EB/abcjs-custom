@@ -35,13 +35,13 @@ var Renderer = require('./abc_renderer');
  * @param {Object} paper div element that will wrap the SVG
  * @param {Object} params all the params -- documented on github //TODO-GD move some of that documentation here
  */
-var EngraverController = function(paper, params) {
-  params = params || {};
-  this.responsive = params.responsive;
-  this.space = 3*spacing.SPACE;
-  this.scale = params.scale ? parseFloat(params.scale) : 0;
-  if (!(this.scale > 0.1))
-  	this.scale = undefined;
+var EngraverController = function (paper, params) {
+	params = params || {};
+	this.responsive = params.responsive;
+	this.space = 3 * spacing.SPACE;
+	this.scale = params.scale ? parseFloat(params.scale) : 0;
+	if (!(this.scale > 0.1))
+		this.scale = undefined;
 
 	if (params.staffwidth) {
 		// Note: Normally all measurements to the engraver are in POINTS. However, if a person is formatting for the
@@ -52,19 +52,20 @@ var EngraverController = function(paper, params) {
 		this.staffwidthScreen = 740; // TODO-PER: Not sure where this number comes from, but this is how it's always been.
 		this.staffwidthPrint = 680; // The number of pixels in 8.5", after 1cm of margin has been removed.
 	}
-  this.editable = params.editable || false;
+	this.editable = params.editable || false;
 	this.listeners = [];
 	if (params.clickListener)
 		this.addSelectListener(params.clickListener);
 
-  this.renderer=new Renderer(paper, params.regression, params.add_classes);
+	this.renderer = new Renderer(paper, params.regression, params.add_classes);
+	this.renderer.topMargin = params.topMargin || 0;
 	this.renderer.setPaddingOverride(params);
-  this.renderer.controller = this; // TODO-GD needed for highlighting
+	this.renderer.controller = this; // TODO-GD needed for highlighting
 
 	this.reset();
 };
 
-EngraverController.prototype.reset = function() {
+EngraverController.prototype.reset = function () {
 	this.selected = [];
 	this.ingroup = false;
 	this.staffgroups = [];
@@ -79,17 +80,17 @@ EngraverController.prototype.reset = function() {
  * run the engraving process
  * @param {ABCJS.Tune|ABCJS.Tune[]} abctunes 
  */
-EngraverController.prototype.engraveABC = function(abctunes, tuneNumber) {
-  if (abctunes[0]===undefined) {
-    abctunes = [abctunes];
-  }
+EngraverController.prototype.engraveABC = function (abctunes, tuneNumber) {
+	if (abctunes[0] === undefined) {
+		abctunes = [abctunes];
+	}
 	this.reset();
 
-  for (var i = 0; i < abctunes.length; i++) {
-  	if (tuneNumber === undefined)
-  		tuneNumber = i;
-    this.engraveTune(abctunes[i], tuneNumber);
-  }
+	for (var i = 0; i < abctunes.length; i++) {
+		if (tuneNumber === undefined)
+			tuneNumber = i;
+		this.engraveTune(abctunes[i], tuneNumber);
+	}
 	if (this.renderer.doRegression)
 		return this.renderer.regressionLines.join("\n");
 };
@@ -109,7 +110,7 @@ EngraverController.prototype.adjustNonScaledItems = function (scale) {
  */
 EngraverController.prototype.engraveTune = function (abctune, tuneNumber) {
 	this.renderer.lineNumber = null;
-	abctune.formatting.tripletfont = {face: "Times", size: 11, weight: "normal", style: "italic", decoration: "none"}; // TODO-PER: This font isn't defined in the standard, so it's hardcoded here for now.
+	abctune.formatting.tripletfont = { face: "Times", size: 11, weight: "normal", style: "italic", decoration: "none" }; // TODO-PER: This font isn't defined in the standard, so it's hardcoded here for now.
 
 	this.renderer.abctune = abctune; // TODO-PER: this is just to get the font info.
 	this.renderer.setVerticalSpace(abctune.formatting);
@@ -121,7 +122,7 @@ EngraverController.prototype.engraveTune = function (abctune, tuneNumber) {
 		scale = undefined;
 	if (scale === undefined) scale = this.renderer.isPrint ? 0.75 : 1;
 	this.renderer.setPadding(abctune);
-	this.engraver = new AbstractEngraver(abctune.formatting.bagpipes,this.renderer, tuneNumber);
+	this.engraver = new AbstractEngraver(abctune.formatting.bagpipes, this.renderer, tuneNumber);
 	this.engraver.setStemHeight(this.renderer.spacing.stemHeight);
 	this.renderer.engraver = this.engraver; //TODO-PER: do we need this coupling? It's just used for the tempo
 	if (abctune.formatting.staffwidth) {
@@ -135,17 +136,17 @@ EngraverController.prototype.engraveTune = function (abctune, tuneNumber) {
 	var i;
 	var abcLine;
 	var hasPrintedTempo = false;
-	for(i=0; i<abctune.lines.length; i++) {
+	for (i = 0; i < abctune.lines.length; i++) {
 		abcLine = abctune.lines[i];
 		if (abcLine.staff) {
-			abcLine.staffGroup = this.engraver.createABCLine(abcLine.staff, !hasPrintedTempo ? abctune.metaText.tempo: null);
+			abcLine.staffGroup = this.engraver.createABCLine(abcLine.staff, !hasPrintedTempo ? abctune.metaText.tempo : null);
 			hasPrintedTempo = true;
 		}
 	}
 
 	// Adjust the x-coordinates to their absolute positions
 	var maxWidth = this.width;
-	for(i=0; i<abctune.lines.length; i++) {
+	for (i = 0; i < abctune.lines.length; i++) {
 		abcLine = abctune.lines[i];
 		if (abcLine.staff) {
 			this.setXSpacing(abcLine.staffGroup, abctune.formatting, i === abctune.lines.length - 1, false);
@@ -154,7 +155,7 @@ EngraverController.prototype.engraveTune = function (abctune, tuneNumber) {
 	}
 
 	// Layout the beams and add the stems to the beamed notes.
-	for(i=0; i<abctune.lines.length; i++) {
+	for (i = 0; i < abctune.lines.length; i++) {
 		abcLine = abctune.lines[i];
 		if (abcLine.staffGroup && abcLine.staffGroup.voices) {
 			for (var j = 0; j < abcLine.staffGroup.voices.length; j++)
@@ -165,7 +166,7 @@ EngraverController.prototype.engraveTune = function (abctune, tuneNumber) {
 
 	// Set the staff spacing
 	// TODO-PER: we should have been able to do this by the time we called setUpperAndLowerElements, but for some reason the "bottom" element seems to be set as a side effect of setting the X spacing.
-	for(i=0; i<abctune.lines.length; i++) {
+	for (i = 0; i < abctune.lines.length; i++) {
 		abcLine = abctune.lines[i];
 		if (abcLine.staffGroup) {
 			abcLine.staffGroup.height = abcLine.staffGroup.calcHeight();
@@ -200,7 +201,7 @@ EngraverController.prototype.engraveTune = function (abctune, tuneNumber) {
 function calcHorizontalSpacing(isLastLine, stretchLast, targetWidth, lineWidth, spacing, spacingUnits, minSpace) {
 	// TODO-PER: This used to stretch the first line when it is the only line, but I'm not sure why. abcm2ps doesn't do that
 	if (isLastLine && lineWidth / targetWidth < 0.66 && !stretchLast) return null; // don't stretch last line too much
-	if (Math.abs(targetWidth-lineWidth) < 2) return null; // if we are already near the target width, we're done.
+	if (Math.abs(targetWidth - lineWidth) < 2) return null; // if we are already near the target width, we're done.
 	var relSpace = spacingUnits * spacing;
 	var constSpace = lineWidth - relSpace;
 	if (spacingUnits > 0) {
@@ -222,16 +223,16 @@ function calcHorizontalSpacing(isLastLine, stretchLast, targetWidth, lineWidth, 
  * @private
  */
 EngraverController.prototype.setXSpacing = function (staffGroup, formatting, isLastLine, debug) {
-   var newspace = this.space;
-   //var debug = true;
-  for (var it = 0; it < 8; it++) { // TODO-PER: shouldn't need multiple passes, but each pass gets it closer to the right spacing. (Only affects long lines: normal lines break out of this loop quickly.)
-	  staffGroup.layout(newspace, this.renderer, debug);
-	  var stretchLast = formatting.stretchlast ? formatting.stretchlast : false;
-		newspace = calcHorizontalSpacing(isLastLine, stretchLast, this.width+this.renderer.padding.left, staffGroup.w, newspace, staffGroup.spacingunits, staffGroup.minspace);
+	var newspace = this.space;
+	//var debug = true;
+	for (var it = 0; it < 8; it++) { // TODO-PER: shouldn't need multiple passes, but each pass gets it closer to the right spacing. (Only affects long lines: normal lines break out of this loop quickly.)
+		staffGroup.layout(newspace, this.renderer, debug);
+		var stretchLast = formatting.stretchlast ? formatting.stretchlast : false;
+		newspace = calcHorizontalSpacing(isLastLine, stretchLast, this.width + this.renderer.padding.left, staffGroup.w, newspace, staffGroup.spacingunits, staffGroup.minspace);
 		if (debug)
 			console.log("setXSpace", it, staffGroup.w, newspace, staffGroup.minspace);
 		if (newspace === null) break;
-  }
+	}
 	centerWholeRests(staffGroup.voices);
 	//this.renderer.printHorizontalLine(this.width);
 };
@@ -249,8 +250,8 @@ EngraverController.prototype.engraveStaffLine = function (staffGroup) {
 	staffGroup.draw(this.renderer);
 	var height = staffGroup.height * spacing.STEP;
 	//this.renderer.printVerticalLine(this.width+this.renderer.padding.left, this.renderer.y, this.renderer.y+height);
-  this.staffgroups[this.staffgroups.length] = staffGroup;
-	this.lastStaffGroupIndex = this.staffgroups.length-1;
+	this.staffgroups[this.staffgroups.length] = staffGroup;
+	this.lastStaffGroupIndex = this.staffgroups.length - 1;
 	this.renderer.y += height;
 };
 
@@ -259,15 +260,15 @@ EngraverController.prototype.engraveStaffLine = function (staffGroup) {
  * @protected
  */
 EngraverController.prototype.notifySelect = function (abselem, tuneNumber, classes) {
-  this.clearSelection();
-  if (abselem.highlight) {
-    this.selected = [abselem];
-    abselem.highlight();
-  }
-  var abcelem = abselem.abcelem || {};
-  for (var i=0; i<this.listeners.length;i++) {
-	  this.listeners[i](abcelem, tuneNumber, classes);
-  }
+	this.clearSelection();
+	if (abselem.highlight) {
+		this.selected = [abselem];
+		abselem.highlight();
+	}
+	var abcelem = abselem.abcelem || {};
+	for (var i = 0; i < this.listeners.length; i++) {
+		this.listeners[i](abcelem, tuneNumber, classes);
+	}
 };
 
 /**
@@ -286,10 +287,10 @@ EngraverController.prototype.notifySelect = function (abselem, tuneNumber, class
  * @private
  */
 EngraverController.prototype.clearSelection = function () {
-  for (var i=0;i<this.selected.length;i++) {
-    this.selected[i].unhighlight();
-  }
-  this.selected = [];
+	for (var i = 0; i < this.selected.length; i++) {
+		this.selected[i].unhighlight();
+	}
+	this.selected = [];
 };
 
 /**
@@ -298,7 +299,7 @@ EngraverController.prototype.clearSelection = function () {
  * @param {Function} listener.highlight the abcelem of the model the listener passed to this controller should be highlighted
  */
 EngraverController.prototype.addSelectListener = function (clickListener) {
-  this.listeners[this.listeners.length] = clickListener;
+	this.listeners[this.listeners.length] = clickListener;
 };
 
 /**
@@ -306,26 +307,25 @@ EngraverController.prototype.addSelectListener = function (clickListener) {
  * @param {number} start the character in the source abc where highlighting should start
  * @param {number} end the character in the source abc where highlighting should end
  */
-EngraverController.prototype.rangeHighlight = function(start,end)
-{
-    this.clearSelection();
-    for (var line=0;line<this.staffgroups.length; line++) {
-	var voices = this.staffgroups[line].voices;
-	for (var voice=0;voice<voices.length;voice++) {
-	    var elems = voices[voice].children;
-	    for (var elem=0; elem<elems.length; elem++) {
-		// Since the user can highlight more than an element, or part of an element, a hit is if any of the endpoints
-		// is inside the other range.
-		var elStart = elems[elem].abcelem.startChar;
-		var elEnd = elems[elem].abcelem.endChar;
-		if ((end>elStart && start<elEnd) || ((end===start) && end===elEnd)) {
-		    //		if (elems[elem].abcelem.startChar>=start && elems[elem].abcelem.endChar<=end) {
-		    this.selected[this.selected.length]=elems[elem];
-		    elems[elem].highlight();
+EngraverController.prototype.rangeHighlight = function (start, end) {
+	this.clearSelection();
+	for (var line = 0; line < this.staffgroups.length; line++) {
+		var voices = this.staffgroups[line].voices;
+		for (var voice = 0; voice < voices.length; voice++) {
+			var elems = voices[voice].children;
+			for (var elem = 0; elem < elems.length; elem++) {
+				// Since the user can highlight more than an element, or part of an element, a hit is if any of the endpoints
+				// is inside the other range.
+				var elStart = elems[elem].abcelem.startChar;
+				var elEnd = elems[elem].abcelem.endChar;
+				if ((end > elStart && start < elEnd) || ((end === start) && end === elEnd)) {
+					//		if (elems[elem].abcelem.startChar>=start && elems[elem].abcelem.endChar<=end) {
+					this.selected[this.selected.length] = elems[elem];
+					elems[elem].highlight();
+				}
+			}
 		}
-	    }
 	}
-    }
 };
 
 
@@ -335,11 +335,11 @@ function centerWholeRests(voices) {
 	for (var i = 0; i < voices.length; i++) {
 		var voice = voices[i];
 		// Look through all of the elements except for the first and last. If the whole note appears there then there isn't anything to center it between anyway.
-		for (var j = 1; j < voice.children.length-1; j++) {
+		for (var j = 1; j < voice.children.length - 1; j++) {
 			var absElem = voice.children[j];
 			if (absElem.abcelem.rest && (absElem.abcelem.rest.type === 'whole' || absElem.abcelem.rest.type === 'multimeasure')) {
-				var before = voice.children[j-1];
-				var after = voice.children[j+1];
+				var before = voice.children[j - 1];
+				var after = voice.children[j + 1];
 				var midpoint = (after.x - before.x) / 2 + before.x;
 				absElem.x = midpoint - absElem.w / 2;
 				for (var k = 0; k < absElem.children.length; k++)
