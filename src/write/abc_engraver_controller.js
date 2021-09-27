@@ -58,7 +58,7 @@ var EngraverController = function (paper, params) {
 		this.addSelectListener(params.clickListener);
 
 	this.renderer = new Renderer(paper, params.regression, params.add_classes);
-	this.renderer.topMargin = params.topMargin || 0;
+	this.renderer.fixedTopMargin = params.fixedTopMargin || 0;
 	this.renderer.setPaddingOverride(params);
 	this.renderer.controller = this; // TODO-GD needed for highlighting
 

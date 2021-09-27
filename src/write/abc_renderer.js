@@ -43,7 +43,7 @@ var Renderer = function (paper, doRegression, shouldAddClasses) {
 Renderer.prototype.reset = function () {
 
 	this.paper.clear();
-	this.y = this.topMargin || 0;
+	this.y = this.fixedTopMargin || 0;
 	this.abctune = null;
 	this.lastM = null;
 	this.ingroup = false;
