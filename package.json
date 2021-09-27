@@ -78,5 +78,5 @@
     "fix-versions": "./fix-versions.sh 5.1.2",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "version": "5.1.2"
+  "version": "5.1.3"
 }
